@@ -8,7 +8,8 @@ Installation
 * Make sure that Go is installed on your computer.
 * Follow the instructions to install GLFW.
 https://github.com/go-gl/glfw3
-* Once you have installed Go and GLFW:
+* Follow the instructions to install GL. https://github.com/go-gl/gl
+* Once you have installed Go, GL and GLFW:
 ```
 go get github.com/nullboundary/gopenframeworks
 ```
