@@ -1,6 +1,6 @@
 Gopenframeworks
 ======================
-Gopenframeworks (temporary project name) is a proof of concept exploring the possiblity of using go to create a graphics framework inspired by openframeworks. All contributions to the framework are welcome, but this framework is ```NOT``` ready for use yet. 
+Gopenframeworks (temporary project name) is a proof of concept exploring the possibility of using go to create a graphics framework inspired by openframeworks. All contributions to the framework are welcome, but this framework is NOT ready for use yet.
 
 Installation
 ======================
@@ -49,16 +49,17 @@ func (app testApp) Update() {
 //--------------------------------------------------------------
 func (app testApp) Draw() {
 
-	redTriangle := gof.Triangle(100, 120, 0, 120, 120, 0, 310, 340, 0)
+	redTriangle := gof.Triangle(0, 0, 0, width, 0, 0, width/2, height, 0)
 	redTriangle.Fill(1, 0, 0, 1.0) //r,g,b,a
 	redTriangle.Draw()
 
-	greenRect := gof.Rectangle(300, 129, 339, 599) //x,y,w,h
-	greenRect.Fill(0, 1, 0.5, 0.2)                 //r,g,b,a
-	greenRect.Draw()
+	cutOutRect := gof.Rectangle((width/2)-150.0, 0, 300, 300) //x,y,w,h
+	cutOutRect.Fill(0, 0, 0.2, 0.4)                 //r,g,b,a
+	cutOutRect.Draw()
 	
 	movingLine := gof.NewLine(0, y, 0, width, y, 0)
 	movingLine.Fill(1, 0, 0, 1.0)
 	movingLine.Draw()
 }
 ```
+![Image](examples/example.png?raw=true)
