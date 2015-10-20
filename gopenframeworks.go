@@ -1,10 +1,8 @@
 package gopenframeworks
 
 import (
-	"github.com/go-gl/gl"
-	glfw "github.com/go-gl/glfw3"
-	"github.com/go-gl/glh"
-	"github.com/go-gl/glu"
+	"github.com/go-gl/gl/v4.1-core/gl"
+	"github.com/go-gl/glfw/v3.1/glfw"
 	"log"
 	"runtime"
 )
@@ -56,8 +54,11 @@ func RunApp(app BaseApp) {
 	defer appWindow.GLFWindow.Destroy()
 
 	initGL()
-	compileShaders(vertexPixel, fragColor)
-	defer shadeProg.Delete()
+	err := newShaderProgram(vertexPixel, fragColor)
+	if err != nil {
+		log.Fatalf("shader error: %s", err)
+	}
+	defer gl.DeleteProgram(shadeProg)
 
 	app.Setup()
 
@@ -73,7 +74,6 @@ func RunApp(app BaseApp) {
 
 		appWindow.GLFWindow.SwapBuffers()
 		glfw.PollEvents()
-		//checkGLErrors()
 
 		if appWindow.GLFWindow.GetKey(glfw.KeyEscape) == glfw.Press {
 			appWindow.GLFWindow.SetShouldClose(true)
@@ -84,37 +84,18 @@ func RunApp(app BaseApp) {
 
 //Background set the background color of the context
 func Background(r float32, g float32, b float32) {
+	//	red := gl.GLclampf(r) //floating-point value, clamped to the range [0,1]
+	//	green := gl.GLclampf(g)
+	//	blue := gl.GLclampf(b)
 
-	red := gl.GLclampf(r)
-	green := gl.GLclampf(g)
-	blue := gl.GLclampf(b)
-
-	gl.ClearColor(red, green, blue, 1.0)
+	gl.ClearColor(r, g, b, 1.0)
 }
 
 func initGL() {
 
-	errno := gl.Init()
-	if errno != 0 {
-		err := glh.CheckGLError()
+	err := gl.Init()
+	if err != nil {
 		log.Println(err)
-	}
-	checkGLErrors()
-
-}
-
-func checkGLErrors() {
-
-	errno := gl.GetError()
-	for errno != gl.NO_ERROR {
-
-		str, err := glu.ErrorString(errno)
-		if err != nil {
-			log.Printf("Unknown GL error: %d", errno)
-		}
-
-		log.Printf("Opengl Error:%s", str)
-		errno = gl.GetError()
 	}
 
 }

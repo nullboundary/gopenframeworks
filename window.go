@@ -1,7 +1,7 @@
 package gopenframeworks
 
 import (
-	glfw "github.com/go-gl/glfw3"
+	"github.com/go-gl/glfw/v3.1/glfw"
 	"log"
 )
 
@@ -16,26 +16,23 @@ type Window struct {
 //Create initializes the main window
 func (w *Window) Create() {
 
-	// Error callback
-	glfw.SetErrorCallback(errorGLFWCallback)
-
 	//start glfw
-	if !glfw.Init() {
+	err := glfw.Init()
+	if err != nil {
 		panic("Failed to initialize GLFW")
 	}
 
 	//create window
 	glfw.WindowHint(glfw.Samples, 4)
-	glfw.WindowHint(glfw.ContextVersionMajor, 3)
-	glfw.WindowHint(glfw.ContextVersionMinor, 2)
-	glfw.WindowHint(glfw.OpenglForwardCompatible, glfw.True)
-	glfw.WindowHint(glfw.OpenglProfile, glfw.OpenglCoreProfile)
+	glfw.WindowHint(glfw.ContextVersionMajor, 4)
+	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
-	glfw.WindowHint(glfw.OpenglDebugContext, 1)
+	glfw.WindowHint(glfw.OpenGLDebugContext, 1)
 
 	log.Printf("%d %d %s", w.Height, w.Width, w.Title)
 
-	var err error
 	w.GLFWindow, err = glfw.CreateWindow(w.Width, w.Height, w.Title, nil, nil)
 	if err != nil {
 		panic(err)
@@ -52,10 +49,6 @@ func (w *Window) Create() {
 	sizeW, sizeH := w.GLFWindow.GetFramebufferSize()
 	resizeCallback(w.GLFWindow, sizeW, sizeH)
 
-}
-
-func errorGLFWCallback(err glfw.ErrorCode, errStr string) {
-	log.Printf("%v: %s\n", err, errStr)
 }
 
 // resizeCallback sets a new window size

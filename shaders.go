@@ -1,11 +1,12 @@
 package gopenframeworks
 
 import (
-	"github.com/go-gl/gl"
-	"log"
+	"fmt"
+	"github.com/go-gl/gl/v4.1-core/gl"
+	"strings"
 )
 
-var shadeProg gl.Program
+var shadeProg uint32
 
 const (
 	//vertexPixel converts pixel resolution to opengl coordinate space 0 to 1
@@ -36,33 +37,71 @@ void main() {
 }`
 )
 
-func compileShaders(vert string, frag string) {
+//compileShader
+func compileShader(source string, shaderType uint32) (uint32, error) {
+	shader := gl.CreateShader(shaderType)
 
-	vao := gl.GenVertexArray()
-	vao.Bind()
+	csource := gl.Str(source)
+	gl.ShaderSource(shader, 1, &csource, nil)
+	gl.CompileShader(shader)
 
-	//setup default shaders
-	vertex_shader := gl.CreateShader(gl.VERTEX_SHADER)
-	vertex_shader.Source(vert)
-	vertex_shader.Compile()
-	log.Println(vertex_shader.GetInfoLog())
-	defer vertex_shader.Delete()
+	var status int32
+	gl.GetShaderiv(shader, gl.COMPILE_STATUS, &status)
+	if status == gl.FALSE {
+		var logLength int32
+		gl.GetShaderiv(shader, gl.INFO_LOG_LENGTH, &logLength)
 
-	fragment_shader := gl.CreateShader(gl.FRAGMENT_SHADER)
-	fragment_shader.Source(frag)
-	fragment_shader.Compile()
-	log.Println(fragment_shader.GetInfoLog())
-	defer fragment_shader.Delete()
+		log := strings.Repeat("\x00", int(logLength+1))
+		gl.GetShaderInfoLog(shader, logLength, nil, gl.Str(log))
+
+		return 0, fmt.Errorf("failed to compile %v: %v", source, log)
+	}
+
+	return shader, nil
+}
+
+//newShaderProgram
+func newShaderProgram(vert string, frag string) error {
+
+	var vao uint32
+	gl.GenVertexArrays(1, &vao)
+	gl.BindVertexArray(vao)
+
+	vertexShader, err := compileShader(vert+"\x00", gl.VERTEX_SHADER)
+	if err != nil {
+		return err
+	}
+	defer gl.DeleteShader(vertexShader)
+
+	fragmentShader, err := compileShader(frag+"\x00", gl.FRAGMENT_SHADER)
+	if err != nil {
+		return err
+	}
+	defer gl.DeleteShader(fragmentShader)
 
 	shadeProg = gl.CreateProgram()
-	shadeProg.AttachShader(vertex_shader)
-	shadeProg.AttachShader(fragment_shader)
 
-	shadeProg.BindFragDataLocation(0, "outColor")
-	shadeProg.Link()
-	shadeProg.Use()
+	gl.AttachShader(shadeProg, vertexShader)
+	gl.AttachShader(shadeProg, fragmentShader)
+	gl.BindFragDataLocation(shadeProg, 0, gl.Str("outColor\x00"))
+	gl.LinkProgram(shadeProg)
+	gl.UseProgram(shadeProg)
 
-	resUniform := shadeProg.GetUniformLocation("resolution")
-	resUniform.Uniform2f(float32(appWindow.Width), float32(appWindow.Height))
+	var status int32
+	gl.GetProgramiv(shadeProg, gl.LINK_STATUS, &status)
+	if status == gl.FALSE {
+		var logLength int32
+		gl.GetProgramiv(shadeProg, gl.INFO_LOG_LENGTH, &logLength)
+
+		log := strings.Repeat("\x00", int(logLength+1))
+		gl.GetProgramInfoLog(shadeProg, logLength, nil, gl.Str(log))
+
+		return fmt.Errorf("failed to link program: %v", log)
+	}
+
+	resUniform := gl.GetUniformLocation(shadeProg, gl.Str("resolution\x00"))
+	gl.Uniform2f(resUniform, float32(appWindow.Width), float32(appWindow.Height))
+
+	return nil
 
 }

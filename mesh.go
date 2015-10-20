@@ -1,7 +1,7 @@
 package gopenframeworks
 
 import (
-	"github.com/go-gl/gl"
+	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
@@ -16,11 +16,11 @@ type Shape2D interface {
 	Draw()
 }
 
-func toVertexBuffer(vertexPos []float32) gl.Buffer {
-
-	vbo := gl.GenBuffer()                                                       //creates the vbo object
-	vbo.Bind(gl.ARRAY_BUFFER)                                                   //bind to array vbo target
-	gl.BufferData(gl.ARRAY_BUFFER, len(vertexPos)*4, vertexPos, gl.STREAM_DRAW) //add vertex data to vbo
+func toVertexBuffer(vertexPos []float32) uint32 {
+	var vbo uint32
+	gl.GenBuffers(1, &vbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)                                                 //bind to array vbo target
+	gl.BufferData(gl.ARRAY_BUFFER, len(vertexPos)*4, gl.Ptr(vertexPos), gl.STREAM_DRAW) //add vertex data to vbo
 
 	return vbo
 }
@@ -29,12 +29,12 @@ func Mesh(pos ...float32) {
 
 	toVertexBuffer(pos)
 
-	attribLoc := shadeProg.GetAttribLocation("position")
-	attribLoc.AttribPointer(3, gl.FLOAT, false, 0, nil) //what format our vertex array data in the buffer object is stored in
-	attribLoc.EnableArray()
-	defer attribLoc.DisableArray()
+	attribLoc := uint32(gl.GetAttribLocation(shadeProg, gl.Str("position\x00")))
+	gl.EnableVertexAttribArray(attribLoc)
+	gl.VertexAttribPointer(attribLoc, 3, gl.FLOAT, false, 0, gl.PtrOffset(0))
+	defer gl.DisableVertexAttribArray(attribLoc)
 
-	gl.DrawArrays(gl.TRIANGLES, 0, len(pos))
+	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(pos)))
 	//gl.DrawArrays(gl.LINES, 0, len(pos))
 
 }

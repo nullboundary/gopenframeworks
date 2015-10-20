@@ -1,6 +1,8 @@
 package gopenframeworks
 
-import ()
+import (
+	"github.com/go-gl/gl/v4.1-core/gl"
+)
 
 type Tri struct {
 	vertices []float32
@@ -19,8 +21,8 @@ func (t *Tri) Draw() {
 }
 
 func (r *Tri) Fill(red float32, green float32, blue float32, alpha float32) {
-	colorUniform := shadeProg.GetUniformLocation("color")
-	colorUniform.Uniform4f(red, green, blue, alpha)
+	colorUniform := gl.GetUniformLocation(shadeProg, gl.Str("color"+"\x00"))
+	gl.Uniform4f(colorUniform, red, green, blue, alpha)
 }
 
 func (r *Tri) Stroke(red float32, green float32, blue float32, alpha float32) {

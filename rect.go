@@ -1,6 +1,8 @@
 package gopenframeworks
 
-import ()
+import (
+	"github.com/go-gl/gl/v4.1-core/gl"
+)
 
 type Rect struct {
 	vertices []float32
@@ -32,8 +34,8 @@ func (r *Rect) Draw() {
 }
 
 func (r *Rect) Fill(red float32, green float32, blue float32, alpha float32) {
-	colorUniform := shadeProg.GetUniformLocation("color")
-	colorUniform.Uniform4f(red, green, blue, alpha)
+	colorUniform := gl.GetUniformLocation(shadeProg, gl.Str("color\x00"))
+	gl.Uniform4f(colorUniform, red, green, blue, alpha)
 }
 
 func (r *Rect) Stroke(red float32, green float32, blue float32, alpha float32) {
